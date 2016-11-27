@@ -53,12 +53,12 @@ namespace Leap.Unity.DetectionExamples
         private int Vstatus = 0;//1-down, 2-up after down
 
         //Line
-        private List<GameObject> lineObj = new List<GameObject>();
+        private List<GameObject> lineSet = new List<GameObject>();
 
         //Speech Recognition
         private KeywordRecognizer m_Recognizer;
         //Dictionary<string, System.Action> keywords = new Dictionary<string, Action>();
-        private string[] keywords= {
+        private string[] keywords = {
             "listen",
             "license",
             "like",
@@ -86,7 +86,7 @@ namespace Leap.Unity.DetectionExamples
             "ter",
             "ant"
         };
-  
+
 
         public Color DrawColor
         {
@@ -127,7 +127,7 @@ namespace Leap.Unity.DetectionExamples
             }
         }
 
-        
+
 
         //private void speechListen()
         //{
@@ -148,7 +148,7 @@ namespace Leap.Unity.DetectionExamples
             //});
             m_Recognizer = new KeywordRecognizer(keywords);
             m_Recognizer.OnPhraseRecognized += OnPhraseRecognized;
-            m_Recognizer.Start();
+            //m_Recognizer.Start();
         }
 
         private void OnPhraseRecognized(PhraseRecognizedEventArgs args)
@@ -169,214 +169,243 @@ namespace Leap.Unity.DetectionExamples
             //{
             //    Debug.Log("Get keywords.\n");
             //}
-            
+
             //m_Recognizer.
 
-
-            currTime = Time.time;
-
-            //test every detector
-            for (int i = 0; i < _pinchDetectors.Length; i++)
+            if (Global.isDetect)
             {
 
-                var detector = _pinchDetectors[i];
-                var drawState = _drawStates[i];
 
-                try
+
+                currTime = Time.time;
+
+                //test every detector
+                for (int i = 0; i < _pinchDetectors.Length; i++)
                 {
-                    detectedHand = detector.HandModel.GetLeapHand();
-                    if (detectedHand.IsRight)
+
+                    var detector = _pinchDetectors[i];
+                    var drawState = _drawStates[i];
+
+                    try
                     {
-                        if (detector.DidStartHold)
+                        detectedHand = detector.HandModel.GetLeapHand();
+                        if (detectedHand.IsRight)
                         {
-                            Debug.Log("Begin pinch...\n");
-                            lineObj.Add(drawState.BeginNewLine());
-                            //user
-
-                            if (!flag_drawing)
+                            if (detector.DidStartHold)
                             {
-                                startPosition = detector.Position;
-                                flag_drawing = true;
-                                flag_recognize = false;
-                                
-                            }
+                                Debug.Log("Begin pinch...\n");
+                                lineSet.Add(drawState.BeginNewLine());
+                                //user
 
-                        }
-
-                        if (detector.DidRelease)
-                        {
-                            //Debug.Log("The number of draw line before is :" + num_drawline + ".\n");
-                            Debug.Log("Now released.\n");
-                            drawState.FinishLine();
-                            endTime = Time.time;
-                            endPosition = detector.Position;
-                            num_drawline += 1;
-                            //Debug.Log("The number of draw line after is :" + num_drawline + ".\n");
-
-
-                        }
-
-                        if (detector.IsHolding)
-                        {
-                            //Debug.Log("Now holding ..");
-                            drawState.UpdateLine(detector.Position);
-
-                            if (!flag_drawing)
-                            {
-                                startPosition = detector.Position;
-                                flag_drawing = true;
-                                flag_recognize = false;
-
-                            }
-
-                            if (//down
-                                Mathf.Abs(detectedHand.PalmVelocity.y) > Mathf.Abs(detectedHand.PalmVelocity.x)
-                                //&&
-                                //Mathf.Abs(detectedHand.PalmVelocity.y) > Mathf.Abs(detectedHand.PalmVelocity.z)
-                                &&
-                                detectedHand.PalmVelocity.y < 0
-                                )
-                            {
-                                if (Lstatus == 0)
+                                if (!flag_drawing)
                                 {
-                                    Lstatus = 1;
+                                    startPosition = detector.Position;
+                                    flag_drawing = true;
+                                    flag_recognize = false;
+
                                 }
 
-                                if (Vstatus == 0)
-                                {
-                                    Vstatus = 1;
-                                }
                             }
-                            else if (//up
-                               Mathf.Abs(detectedHand.PalmVelocity.y) > Mathf.Abs(detectedHand.PalmVelocity.x)
-                               //&&
-                               //Mathf.Abs(detectedHand.PalmVelocity.y) > Mathf.Abs(detectedHand.PalmVelocity.z)
-                               &&
-                               detectedHand.PalmVelocity.y > 0
-                               )
+
+                            if (detector.DidRelease)
+                            {
+                                //Debug.Log("The number of draw line before is :" + num_drawline + ".\n");
+                                Debug.Log("Now released.\n");
+                                drawState.FinishLine();
+                                endTime = Time.time;
+                                endPosition = detector.Position;
+                                num_drawline += 1;
+                                //Debug.Log("The number of draw line after is :" + num_drawline + ".\n");
+
+
+                            }
+
+                            if (detector.IsHolding)
+                            {
+                                //Debug.Log("Now holding ..");
+                                drawState.UpdateLine(detector.Position);
+
+                                if (!flag_drawing)
+                                {
+                                    startPosition = detector.Position;
+                                    flag_drawing = true;
+                                    flag_recognize = false;
+
+                                }
+
+                                if (//down
+                                    Mathf.Abs(detectedHand.PalmVelocity.y) > Mathf.Abs(detectedHand.PalmVelocity.x)
+                                    //&&
+                                    //Mathf.Abs(detectedHand.PalmVelocity.y) > Mathf.Abs(detectedHand.PalmVelocity.z)
+                                    &&
+                                    detectedHand.PalmVelocity.y < 0
+                                    )
+                                {
+                                    if (Lstatus == 0)
+                                    {
+                                        Lstatus = 1;
+                                    }
+
+                                    if (Vstatus == 0)
+                                    {
+                                        Vstatus = 1;
+                                    }
+                                }
+                                else if (//up
+                                   Mathf.Abs(detectedHand.PalmVelocity.y) > Mathf.Abs(detectedHand.PalmVelocity.x)
+                                   //&&
+                                   //Mathf.Abs(detectedHand.PalmVelocity.y) > Mathf.Abs(detectedHand.PalmVelocity.z)
+                                   &&
+                                   detectedHand.PalmVelocity.y > 0
+                                   )
+                                {
+
+
+                                    if (Vstatus == 1)
+                                    {
+                                        Vstatus = 2;
+                                    }
+                                    else
+                                    {
+                                        //Vstatus = 0;
+                                    }
+
+                                    //Lstatus = 0;
+                                }
+                                else if (//left
+                                    Mathf.Abs(detectedHand.PalmVelocity.x) > Mathf.Abs(detectedHand.PalmVelocity.y)
+                                   //&&
+                                   //Mathf.Abs(detectedHand.PalmVelocity.x) > Mathf.Abs(detectedHand.PalmVelocity.z)
+                                   &&
+                                   detectedHand.PalmVelocity.x < 0
+                                   )
+                                {
+                                    //Lstatus = 0;
+                                    //Vstatus = 0;
+
+                                }
+                                else if (//right
+                                    Mathf.Abs(detectedHand.PalmVelocity.x) > Mathf.Abs(detectedHand.PalmVelocity.y)
+                                   //&&
+                                   //Mathf.Abs(detectedHand.PalmVelocity.x) > Mathf.Abs(detectedHand.PalmVelocity.z)
+                                   &&
+                                   detectedHand.PalmVelocity.x > 0
+                                   )
+                                {
+                                    if (Lstatus == 1)
+                                    {
+                                        Lstatus = 2;
+                                    }
+                                    //Vstatus = 0;
+
+                                }
+
+
+
+                            }
+
+                            //check if draw finished
+                            if (currTime - endTime > 1.8 && endTime != -1 && !flag_recognize && !detector.IsHolding && flag_drawing)
                             {
 
+                                endTime = -1;
+                                flag_recognize = true;
+                                flag_drawing = false;
+                                //drawState.deleteLine();
 
-                                if (Vstatus == 1)
+                                float distBetweenStartAndEnd = Vector3.Distance(new Vector3(startPosition.x, startPosition.y), new Vector3(endPosition.x, endPosition.y));
+                                Debug.Log("The distance is :" + distBetweenStartAndEnd + ".\n");
+
+                                if (num_drawline >= 3)
                                 {
-                                    Vstatus = 2;
+                                    Debug.Log("You have drawn E");
+                                    Global.result = 3;
+                                }
+                                else if (distBetweenStartAndEnd < 1.2)
+                                {
+                                    Debug.Log("You have drawn O!");
+                                    Global.result = 1;
+
                                 }
                                 else
                                 {
-                                    //Vstatus = 0;
-                                }
+                                    if (Lstatus == 2 && Vstatus == 2)
+                                    {
+                                        float yDistBetweenStartAndEnd = Mathf.Abs(startPosition.y - endPosition.y);
+                                        if (yDistBetweenStartAndEnd > 0.7)
+                                        {
+                                            Debug.Log("You have drawn L!");
+                                            Global.result = 0;
 
-                                //Lstatus = 0;
-                            }
-                            else if (//left
-                                Mathf.Abs(detectedHand.PalmVelocity.x) > Mathf.Abs(detectedHand.PalmVelocity.y)
-                               //&&
-                               //Mathf.Abs(detectedHand.PalmVelocity.x) > Mathf.Abs(detectedHand.PalmVelocity.z)
-                               &&
-                               detectedHand.PalmVelocity.x < 0
-                               )
-                            {
-                                //Lstatus = 0;
-                                //Vstatus = 0;
+                                        }
+                                        else
+                                        {
+                                            Debug.Log("You have drawn V!");
+                                            Global.result = 2;
 
-                            }
-                            else if (//right
-                                Mathf.Abs(detectedHand.PalmVelocity.x) > Mathf.Abs(detectedHand.PalmVelocity.y)
-                               //&&
-                               //Mathf.Abs(detectedHand.PalmVelocity.x) > Mathf.Abs(detectedHand.PalmVelocity.z)
-                               &&
-                               detectedHand.PalmVelocity.x > 0
-                               )
-                            {
-                                if (Lstatus == 1)
-                                {
-                                    Lstatus = 2;
-                                }
-                                //Vstatus = 0;
-
-                            }
-
-
-
-                        }
-
-                        //check if draw finished
-                        if (currTime - endTime > 2 && endTime != -1 && !flag_recognize && !detector.IsHolding && flag_drawing)
-                        {
-
-                            endTime = -1;
-                            flag_recognize = true;
-                            flag_drawing = false;
-                            //drawState.deleteLine();
-
-                            float distBetweenStartAndEnd = Vector3.Distance(new Vector3(startPosition.x, startPosition.y), new Vector3(endPosition.x, endPosition.y));
-                            //Debug.Log("The start position is x : " + startPosition.x + ", y : " + startPosition.y + ", z: " + startPosition.z + ".\n");
-                            //Debug.Log("The end position is x : " + endPosition.x + ", y : " + endPosition.y + ", z: " + endPosition.z + ".\n");
-                            //Debug.Log("The distance is : " + distBetweenStartAndEnd + "\n");
-
-                            if (num_drawline >= 3)
-                            {
-                                Debug.Log("You have drawn E");
-                            }
-                            else if (distBetweenStartAndEnd < 0.068)
-                            {
-                                Debug.Log("You have drawn O!");
-                            }
-                            else
-                            {
-                                if (Lstatus == 2 && Vstatus == 2)
-                                {
-                                    float yDistBetweenStartAndEnd = Mathf.Abs(startPosition.y - endPosition.y);
-                                    if (yDistBetweenStartAndEnd > 0.1)
+                                        }
+                                    }
+                                    else if (Lstatus == 2)
                                     {
                                         Debug.Log("You have drawn L!");
+                                        Global.result = 0;
+
+                                    }
+                                    else if (Vstatus == 2)
+                                    {
+                                        Debug.Log("You have drawn V!");
+                                        Global.result = 2;
+
 
                                     }
                                     else
                                     {
-                                        Debug.Log("You have drawn V!");
-
+                                        Global.result = -1;
                                     }
-                                }
-                                else if (Lstatus == 2)
-                                {
-                                    Debug.Log("You have drawn L!");
-                                }
-                                else if (Vstatus == 2)
-                                {
-                                    Debug.Log("You have drawn V!");
 
                                 }
+
+                                //Debug.Log("The number of draw line is :" + num_drawline + ".\n");
+                                num_drawline = 0;
+                                Lstatus = 0;
+                                Vstatus = 0;
+                                foreach (GameObject obj in lineSet)
+                                {
+                                    Destroy(obj);
+                                }
+                                lineSet.Clear();
 
                             }
-
-                            //Debug.Log("The number of draw line is :" + num_drawline + ".\n");
-                            num_drawline = 0;
-                            Lstatus = 0;
-                            Vstatus = 0;
-                            foreach (GameObject obj in lineObj)
-                            {
-                                Destroy(obj);
-                            }
-                            lineObj.Clear();
                         }
                     }
+                    catch (System.Exception)
+                    {
+                        //throw;
+                    }
+
+
+
+
                 }
-                catch (System.Exception)
+            }
+            else
+            {
+                num_drawline = 0;
+                Lstatus = 0;
+                Vstatus = 0;
+                foreach (GameObject obj in lineSet)
                 {
-
-                    //throw;
+                    Destroy(obj);
                 }
-
-
-
-
-
-
-
+                lineSet.Clear();
+                //FindObjectOfType<UIMagic>().GetResult();
             }
 
+        }
 
+        private void OnDestroy()
+        {
+            //m_Recognizer.Stop();
         }
 
         private class DrawState
